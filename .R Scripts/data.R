@@ -184,3 +184,13 @@ comparison_data <- merged_data %>%
     Avg_Chronic_Absenteeism = mean(Chronic_Absenteeism, na.rm = TRUE),
     n = n()
   )
+
+# Title 1 Binary Variable
+merged_data <- merged_data %>%
+  mutate(
+    Title_1_Binary = case_when(
+      Title_1_Status %in% c("Schoolwide Title I Program", "Targeted Assistance Title I Program") ~ "Participates",
+      Title_1_Status == "Eligible, but Not a Participant in Title I Program" ~ "Eligible But Not Participating",
+      TRUE ~ "Not Eligible"
+    )
+  )
