@@ -33,6 +33,34 @@ cep <- cep %>%
 merged_data <- attendance %>%
   inner_join(cep, by = c("School_Name_Clean", "District_Clean", "City_Clean"))
 
+merged_data <- merged_data %>% 
+  select(
+    RCDTS,
+    RCDT,
+    Site_County,
+    District_Clean,
+    City_Clean,
+    Site_Address,
+    Site_Zip,
+    School_Name_Clean,
+    Title_1_Status,
+    `#_Student_Enrollment`,
+    `%_Student_Enrollment_-_Low_Income`,
+    Student_Attendance_Rate,
+    Student_Chronic_Truancy_Rate,
+    Chronically_Truant_Students,
+    `High_School_Dropout_Rate_-_Total`,
+    `High_School_4-Year_Graduation_Rate_-_Total`,
+    Chronic_Absenteeism,
+    Free_Eligibles,
+    Site_Number,
+    Reduced_Eligibles,
+    PaidEligibles,
+    Enrollment,
+    Eligibility_Percent,
+    Participates_in_CEP,
+    )
+
 # Saved cleaned data, change directory to location where you want to save the data
 
 write_csv(merged_data, "C:/Users/joses/OneDrive/Documents/GitHub/final_serrano/Data/final_merged_data.csv")
