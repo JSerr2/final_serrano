@@ -81,3 +81,12 @@ acs_data_wide <- acs_data %>%
     names_from = variable,
     values_from = estimate
   )
+
+# Final merger and further cleaning
+
+acs_data_wide <- acs_data_wide %>% 
+  mutate(District_Clean = tolower(gsub("[^a-zA-Z0-9 ]", "", NAME)))
+
+acs_data_wide <- acs_data_wide %>%
+  mutate(District_Clean = tolower(gsub(", Illinois$", "", NAME)))
+
