@@ -44,7 +44,7 @@ census_api_key("ae01069c564a94c61d198e88a6563d408de746a1", install = TRUE)
 # Elementary School Districts
 elementary_data <- get_acs(
   geography = "school district (elementary)",
-  variables = c("B17020_002E"), 
+  variables = c("B17010_002E"), 
   state = "IL",
   year = 2019
 )
@@ -52,7 +52,7 @@ elementary_data <- get_acs(
 # Secondary School Districts
 secondary_data <- get_acs(
   geography = "school district (secondary)",
-  variables = c("B17020_002E"),
+  variables = c("B17010_002E"),
   state = "IL", 
   year = 2019
 )
@@ -60,10 +60,24 @@ secondary_data <- get_acs(
 # Unified School Districts
 unified_data <- get_acs(
   geography = "school district (unified)",
-  variables = c("B17020_002E"),
+  variables = c("B17010_002E"),
   state = "IL",
   year = 2019
 )
 
+# Merging ACS Data
 
+elementary_data <- elementary_data %>% mutate(District_Type = "Elementary")
+secondary_data <- secondary_data %>% mutate(District_Type = "Secondary")
+unified_data <- unified_data %>% mutate(District_Type = "Unified")
 
+acs_data <- bind_rows(elementary_data, secondary_data, unified_data)
+
+# Reshaping
+
+acs_data_wide <- acs_data %>% 
+  select(GEOID, NAME, variable, estimate, District_Type) %>% 
+  pivot_wider(
+    names_from = variable,
+    values_from = estimate
+  )
