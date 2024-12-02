@@ -37,6 +37,7 @@ merged_data <- merged_data %>%
   select(
     RCDTS,
     RCDT,
+    Site_Number,
     Site_County,
     District_Clean,
     City_Clean,
@@ -53,13 +54,29 @@ merged_data <- merged_data %>%
     `High_School_4-Year_Graduation_Rate_-_Total`,
     Chronic_Absenteeism,
     Free_Eligibles,
-    Site_Number,
     Reduced_Eligibles,
     PaidEligibles,
     Enrollment,
     Eligibility_Percent,
     Participates_in_CEP,
     )
+
+merged_data <- merged_data %>%
+  mutate(
+    Participates_in_CEP = ifelse(is.na(Participates_in_CEP), "Non-CEP", "CEP")
+  )
+
+# Define poverty levels based on FRPL eligibility
+merged_data <- merged_data %>%
+  mutate(
+    Poverty_Level = case_when(
+      `%_Student_Enrollment_-_Low_Income` <= 25.0 ~ "Low Poverty",
+      `%_Student_Enrollment_-_Low_Income` <= 50.0 ~ "Mid-Low Poverty",
+      `%_Student_Enrollment_-_Low_Income` <= 75.0 ~ "Mid-High Poverty",
+      TRUE ~ "High Poverty"
+    )
+  )
+
 
 # Saved cleaned data, change directory to location where you want to save the data
 
@@ -159,3 +176,11 @@ if (use_api) {
   print("Data loaded from archived files.")
 }
 
+# Grouping by poverty level and CEP participation
+comparison_data <- merged_data %>%
+  group_by(Poverty_Level, Participates_in_CEP) %>%
+  summarise(
+    Avg_Chronic_Truancy = mean(Student_Chronic_Truancy_Rate, na.rm = TRUE),
+    Avg_Chronic_Absenteeism = mean(Chronic_Absenteeism, na.rm = TRUE),
+    n = n()
+  )
