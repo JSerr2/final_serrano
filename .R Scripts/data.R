@@ -1,11 +1,14 @@
 library(tidyverse)
 library(tidycensus)
 
+setwd("C:\\Users\\joses\\OneDrive\\Documents\\GitHub\\final_serrano")
+
+
 # Importing original data sets, change directory to your saved file location
 
-attendance <- readxl::read_xlsx("C:\\Users\\joses\\OneDrive\\Documents\\GitHub\\final_serrano\\Data\\2019-Report-Card-Public-Data-Set.xlsx", sheet = "General")
+attendance <- readxl::read_xlsx("Data/2019-Report-Card-Public-Data-Set.xlsx", sheet = "General")
 
-cep <- readxl::read_xlsx("C:\\Users\\joses\\OneDrive\\Documents\\GitHub\\final_serrano\\Data\\fy19-eligibilitydata.xlsx")
+cep <- readxl::read_xlsx("Data/fy19-eligibilitydata.xlsx")
 
 # Data cleaning by eliminating spaces and creating consistent column names
 
@@ -78,27 +81,26 @@ merged_data <- merged_data %>%
   )
 
 
-# Saved cleaned data, change directory to location where you want to save the data
+# Saved cleaned data
 
-write_csv(merged_data, "C:/Users/joses/OneDrive/Documents/GitHub/final_serrano/Data/final_merged_data.csv")
+write_csv(merged_data, "Data/final_merged_data.csv")
 
 # Automatic Data Retrieval, input key in this line of code
 census_api_key("ae01069c564a94c61d198e88a6563d408de746a1", install = TRUE)
 
-# Toggle between API data and archived data
-use_api <- TRUE  # Set to TRUE to pull fresh data from the API
+# Toggle between API data and archived data (SET TO TRUE IF USING API TO RETRIEVE, OTHERWISE SET TO FALSE)
+use_api <- TRUE  
 
 # Data Paths for Archived Data
-county_data_path <- "C:\\Users\\joses\\OneDrive\\Documents\\GitHub\\final_serrano\\Data\\county_wide.csv"
-acs_data_path <- "C:\\Users\\joses\\OneDrive\\Documents\\GitHub\\final_serrano\\Data\\acs_data_wide.csv"
+county_data_path <- "Data/county_wide.csv"
+acs_data_path <- "Data/acs_data_wide.csv"
 
 if (use_api) {
-  # Load or retrieve ACS school district data
   
   # Elementary School Districts
   elementary_data <- get_acs(
     geography = "school district (elementary)",
-    variables = c("B17010_002E"), 
+    variables = c("B17010_002E", "B17010_001E"),  
     state = "IL",
     year = 2019
   )
@@ -106,7 +108,7 @@ if (use_api) {
   # Secondary School Districts
   secondary_data <- get_acs(
     geography = "school district (secondary)",
-    variables = c("B17010_002E"),
+    variables = c("B17010_002E", "B17010_001E"),  
     state = "IL", 
     year = 2019
   )
@@ -114,7 +116,7 @@ if (use_api) {
   # Unified School Districts
   unified_data <- get_acs(
     geography = "school district (unified)",
-    variables = c("B17010_002E"),
+    variables = c("B17010_002E", "B17010_001E"),  
     state = "IL",
     year = 2019
   )
@@ -122,7 +124,7 @@ if (use_api) {
   # County
   county_acs <- get_acs(
     geography = "county",
-    variables = c("B17010_002E"),
+    variables = c("B17010_002E", "B17010_001E"),  
     state = "IL",
     year = 2019
   )
@@ -140,6 +142,13 @@ if (use_api) {
     pivot_wider(
       names_from = variable,
       values_from = estimate
+    ) %>%
+    rename(
+      Below_Poverty = B17010_002,
+      Total_Population = B17010_001
+    ) %>%
+    mutate(
+      Poverty_Rate = (Below_Poverty / Total_Population) * 100  
     )
   
   county_wide <- county_acs %>% 
@@ -147,6 +156,13 @@ if (use_api) {
     pivot_wider(
       names_from = variable,
       values_from = estimate
+    ) %>%
+    rename(
+      Below_Poverty = B17010_002,
+      Total_Population = B17010_001
+    ) %>%
+    mutate(
+      Poverty_Rate = (Below_Poverty / Total_Population) * 100  
     )
   
   # Final ACS School and County Cleaning
@@ -176,6 +192,7 @@ if (use_api) {
   print("Data loaded from archived files.")
 }
 
+
 # Grouping by poverty level and CEP participation
 comparison_data <- merged_data %>%
   group_by(Poverty_Level, Participates_in_CEP) %>%
@@ -194,3 +211,4 @@ merged_data <- merged_data %>%
       TRUE ~ "Not Eligible"
     )
   )
+
